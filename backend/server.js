@@ -1,11 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const Anthropic = require('@anthropic-ai/sdk');
 const db = require('./db');
 
 const app = express();
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(process.env.NODE_ENV === 'production' ? cors() : cors({ origin: 'http://localhost:5173' }));
 app.use(express.json());
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -261,6 +262,13 @@ app.delete('/api/vocabulary/:id', (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// Serve built frontend in production
+if (process.env.NODE_ENV === 'production') {
+  const dist = path.join(__dirname, '..', 'frontend', 'dist');
+  app.use(express.static(dist));
+  app.get('*', (_req, res) => res.sendFile(path.join(dist, 'index.html')));
+}
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => console.log(`Backend running on http://localhost:${PORT}`));
