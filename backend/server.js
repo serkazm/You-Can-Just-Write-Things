@@ -141,6 +141,10 @@ ${prevGrammar.length > 0 ? `• Grammar you previously corrected (if now fixed, 
 ${prevGrammar.map(g => `  - "${g.original}" → "${g.corrected}"`).join('\n')}` : ''}
 ` : '';
 
+    const firstSubmissionBlock = iteration === 1 ? `
+FIRST SUBMISSION — EXHAUSTIVE FEEDBACK REQUIRED: This is the student's first attempt. You MUST identify and report EVERY mistake in the text without exception — every grammar error, every spelling error, every punctuation error, and every significant vocabulary problem. Do not group, skip, or summarise errors. The student needs a complete picture of all mistakes so they know exactly what to fix. There is no limit on the number of errors to report.
+` : '';
+
     const message = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 3000,
@@ -153,7 +157,7 @@ Format: ${session.format_name}
 Exercise: ${session.exercise_prompt}
 Target word count: ${session.min_words}–${session.max_words}
 Actual word count: ${wordCount}${iteration > 1 ? `\nThis is revision #${iteration}.` : ''}
-${consistencyBlock}
+${firstSubmissionBlock}${consistencyBlock}
 IMPORTANT: The exercise may ask the student to write as a fictional character or sign with a specific name. Do not address the student by that character's name in your feedback — always refer to them neutrally as "you" or "the student".
 
 VOCABULARY POLICY: Never penalise a student for using vocabulary that is more advanced than their stated level — if they use it correctly, treat it as a strength and mention it in "strengths". Only suggest vocabulary changes when a word is genuinely wrong or there is a clearly better fit that has not been suggested before.
@@ -176,7 +180,7 @@ Return ONLY a valid JSON object (no markdown) with:
   ${session.level === 'A1' ? '— correct use of basic present-tense forms of common verbs (быть, иметь, жить, работать etc.), basic gender agreement, simple sentence structure, a few set phrases. Simple vocabulary is expected and correct. Do NOT penalise for lack of cases or complex grammar.' : ''}${session.level === 'A2' ? '— correct simple sentences, basic case usage (accusative, prepositional at minimum), present and past tense, common phrases. Expect limited vocabulary and simple connectors (и, но, потому что).' : ''}${session.level === 'B1' ? '— mostly correct case endings, present/past/future tense, imperfective/perfective distinction in simple contexts, topic-appropriate vocabulary, basic connectors and discourse markers.' : ''}${session.level === 'B2' ? '— accurate grammar with occasional errors, good range of vocabulary, correct verb aspects, subordinate clauses, formal/informal register distinction, cohesive text structure.' : ''}${session.level === 'C1' ? '— high grammatical accuracy, wide vocabulary range, nuanced register, complex sentence structures, sophisticated connectors, stylistically appropriate text.' : ''}${session.level === 'C2' ? '— near-native accuracy, rich idiomatic vocabulary, full stylistic control, complex syntax used naturally and correctly.' : ''}
 - "summary": 2–3 sentence overall assessment in English
 - "grammar_errors": array of ALL genuine grammar, spelling, and punctuation errors found — do not skip or summarise any, list every single one. Each object: { "original": string (the exact phrase as written), "corrected": string, "explanation": string }. CRITICAL: only include an item if the original is actually wrong and the corrected form is genuinely different. Never include an item where "original" and "corrected" are identical, and never include a phrase that is already correct just to note that it is correct — if it is correct, omit it entirely.
-- "vocabulary_suggestions": array of up to 3 objects { "original": string, "suggested": string, "note": string, "translation": string (English translation of the suggested word/phrase), "example_ru": string (a natural Russian example sentence using the suggested word), "example_en": string (English translation of that example sentence) }
+- "vocabulary_suggestions": ${iteration === 1 ? 'array of ALL significant vocabulary issues — no limit, list every word or phrase that is wrong or has a clearly better fit. Each object' : 'array of up to 3 objects'} { "original": string, "suggested": string, "note": string, "translation": string (English translation of the suggested word/phrase), "example_ru": string (a natural Russian example sentence using the suggested word), "example_en": string (English translation of that example sentence) }
 - "structure_feedback": 1–2 sentence string about structure and format adherence
 - "strengths": array of 2–3 strings
 - "word_count_note": short string about whether word count is on target
