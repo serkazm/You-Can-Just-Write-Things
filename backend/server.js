@@ -65,7 +65,7 @@ app.post('/api/generate', async (req, res) => {
     const requiredWordCount = { A1: 1, A2: 1, B1: 2, B2: 2, C1: 3, C2: 3 }[level] || 2;
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-opus-4-7',
       max_tokens: 500,
       messages: [{
         role: 'user',
@@ -142,11 +142,11 @@ ${prevGrammar.map(g => `  - "${g.original}" → "${g.corrected}"`).join('\n')}` 
 ` : '';
 
     const firstSubmissionBlock = iteration === 1 ? `
-FIRST SUBMISSION — EXHAUSTIVE FEEDBACK REQUIRED: This is the student's first attempt. You MUST identify and report EVERY mistake in the text without exception — every grammar error, every spelling error, every punctuation error, and every significant vocabulary problem. Do not group, skip, or summarise errors. The student needs a complete picture of all mistakes so they know exactly what to fix. There is no limit on the number of errors to report.
+FIRST SUBMISSION — EXHAUSTIVE FEEDBACK REQUIRED: This is the student's first attempt. You MUST identify and report EVERY single mistake in the text without exception — every grammar error, every spelling error, every punctuation error, and every significant vocabulary problem. Go through the text sentence by sentence. Do not group, skip, summarise, or deprioritise any error. This is critical: future submission rounds will ONLY revisit errors flagged here. Any mistake you miss now will never be corrected, and raising it in a later round would be unfair to the student. After your first pass, re-read the entire text a second time specifically to catch anything missed. There is no limit on the number of errors to report.
 ` : '';
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-opus-4-7',
       max_tokens: 3000,
       messages: [{
         role: 'user',
@@ -161,6 +161,8 @@ ${firstSubmissionBlock}${consistencyBlock}
 IMPORTANT: The exercise may ask the student to write as a fictional character or sign with a specific name. Do not address the student by that character's name in your feedback — always refer to them neutrally as "you" or "the student".
 
 VOCABULARY POLICY: Never penalise a student for using vocabulary that is more advanced than their stated level — if they use it correctly, treat it as a strength and mention it in "strengths". Only suggest vocabulary changes when a word is genuinely wrong or there is a clearly better fit that has not been suggested before.
+
+PUNCTUATION POLICY: Do not flag a hyphen (-) used in place of an em-dash (—) as a mistake. Accept it silently.
 
 Student's text:
 ---
